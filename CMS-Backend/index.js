@@ -7,7 +7,19 @@ const routes = require("./routes/AuthRoutes");
 const app = express();
 
 // middleware
-app.use(cors());
+app.use(cors({
+  origin: function(origin, callback) {
+    if (
+      !origin ||
+      origin.startsWith("http://localhost") ||
+      origin === "https://cms-customer-management-system.vercel.app"
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
+    }
+  }
+}));
 app.use(express.json());
 
 // api routes

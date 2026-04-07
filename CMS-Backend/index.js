@@ -2,14 +2,17 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
-const routes = require("./routes/AuthRoutes");
-const route = require("./routes/ShopRoutes")
+const authRoutes    = require("./routes/authRoutes");
+const shopRoutes    = require("./routes/shopRoutes");
+const productRoutes = require("./routes/productRoutes");
+const orderRoutes   = require("./routes/orderRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
-// middleware
+/* ── CORS ── */
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     if (
       !origin ||
       origin.startsWith("http://localhost") ||
@@ -19,17 +22,26 @@ app.use(cors({
     } else {
       callback(new Error("CORS not allowed"));
     }
-  }
+  },
 }));
 
 app.use(express.json());
 
-// api routes
-app.use("/api", routes);
-app.use("/api",route);
+/* ── Routes ── */
+app.use("/api/auth",     authRoutes);
+app.use("/api/shops",    shopRoutes);
+app.use("/api",          productRoutes);   // /api/products/:id  +  /api/shops/:id/products/*
+app.use("/api/orders",   orderRoutes);
+app.use("/api/payments", paymentRoutes);
 
-const PORT = process.env.PORT || 3000;
+/* ── Health check ── */
+app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 
-app.listen(PORT, () => {
-  console.log(`Server is running on Port ${PORT}`);
+/* ── Global error handler ── */
+app.use((err, _req, res, _next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ message: err.message || "Internal server error" });
 });
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

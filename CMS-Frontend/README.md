@@ -1,16 +1,119 @@
-# React + Vite
+# 🛍️ ShopNear — Customer Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A production-grade **React + Vite + Tailwind CSS** customer-facing app for a multi-shop ordering platform.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## React Compiler
+| Feature | Description |
+|---------|-------------|
+| 🔐 Auth | JWT login / signup with auto-restore |
+| 📍 Geolocation | Detect user location → fetch nearby shops |
+| 🏪 Shops | Browse, search, filter, sort shops |
+| 📦 Products | Grid view, search, category filter |
+| 🛒 Cart | Add/remove/update, localStorage persistence |
+| 🧾 Checkout | 3-step: Address → Payment → Confirm |
+| 💳 Payment | UPI / Card / COD with status polling |
+| 📋 Orders | History, status filter, live tracking |
+| ⭐ Feedback | Rate & review delivered orders |
+| 👤 Profile | Edit info & change password |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🚀 Quick Start
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Configure environment
+cp .env.example .env
+# Edit VITE_API_URL to point at your backend
+
+# 3. Start dev server
+npm run dev
+```
+
+App runs at **http://localhost:3000**
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── components/
+│   ├── common/          # Button, Input, Loader, Modal, Badge
+│   └── layout/          # Navbar, Footer
+├── context/             # AuthContext, CartContext
+├── hooks/               # useAuth, useCart, useFetch
+├── pages/
+│   ├── Auth/            # Login, Signup
+│   ├── Cart/            # Cart, Checkout
+│   ├── Home/            # Landing page
+│   ├── Orders/          # Orders list, OrderDetail
+│   ├── Payment/         # Payment gateway page
+│   ├── Products/        # Products grid, ProductCard
+│   ├── Profile/         # User profile & settings
+│   └── Shops/           # NearbyShops, ShopDetails
+├── routes/              # AppRoutes (protected + guest routes)
+├── services/            # api.js, authService, shopService, orderService
+└── utils/               # constants.js, helpers.js
+```
+
+---
+
+## 🔗 API Integration
+
+The app connects to your Node.js + Salesforce backend via `VITE_API_URL`.
+
+### Expected endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/auth/signup` | Register customer |
+| POST | `/auth/login` | Login → returns JWT |
+| GET  | `/auth/profile` | Get own profile |
+| PUT  | `/auth/profile` | Update profile |
+| PUT  | `/auth/change-password` | Change password |
+| GET  | `/shops/nearby?lat&lng&radius` | Nearby shops |
+| GET  | `/shops` | All shops |
+| GET  | `/shops/:id` | Shop detail |
+| GET  | `/shops/:id/products` | Shop products |
+| GET  | `/shops/:id/reviews` | Shop reviews |
+| POST | `/shops/:id/reviews` | Submit review |
+| POST | `/orders` | Place order |
+| GET  | `/orders/my` | My orders |
+| GET  | `/orders/:id` | Order detail |
+| PUT  | `/orders/:id/cancel` | Cancel order |
+| POST | `/payments/initiate` | Start payment |
+| POST | `/payments/verify` | Verify payment |
+| GET  | `/payments/status/:orderId` | Payment status |
+| POST | `/orders/:id/feedback` | Submit feedback |
+
+---
+
+## 🎨 Design System
+
+- **Fonts**: Syne (display) + DM Sans (body) + JetBrains Mono (numbers)
+- **Accent**: Orange `#f97316` on dark `#0f0f0f` background
+- **Components**: `btn-primary`, `btn-secondary`, `card`, `input-field`, `badge-*`
+- **Animations**: `fade-in`, `slide-up`, `scale-in` — all CSS-only
+
+---
+
+## 🔐 Protected Routes
+
+Routes requiring authentication: `/cart`, `/checkout`, `/payment`, `/orders`, `/orders/:id`, `/profile`
+
+Unauthenticated users are redirected to `/login` with the return path stored in `location.state.from`.
+
+---
+
+## 🏗️ Build for Production
+
+```bash
+npm run build
+# Output in /dist — deploy to Vercel, Netlify, or your server
+```

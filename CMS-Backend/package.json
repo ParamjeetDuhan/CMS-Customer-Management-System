@@ -1,28 +1,21 @@
 {
-  "name": "cms-backend",
+  "name": "shopnear-backend",
   "version": "1.0.0",
+  "description": "ShopNear customer backend — Express + Salesforce + Redis",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "axios": "^1.13.6",
-    "bcryptjs": "^3.0.3",
+    "axios": "^1.14.0",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.3.1",
-    "helmet": "^8.1.0",
-    "joi": "^18.0.2",
-    "jsforce": "^3.10.14",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
     "jsonwebtoken": "^9.0.3",
-    "morgan": "^1.10.1",
-    "redis": "^5.11.0"
+    "nodemailer": "^6.10.1",
+    "redis": "^4.7.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

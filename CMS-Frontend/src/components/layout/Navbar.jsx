@@ -1,105 +1,276 @@
-import { useState } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { getUserLocation } from "../../utils/helpers";
+import {
+  HiShoppingCart,
+  HiUser,
+  HiMenuAlt3,
+  HiX,
+  HiHome,
+  HiLocationMarker,
+  HiClipboardList,
+  HiLogout,
+  HiLogin,
+} from "react-icons/hi";
+import { useAuth } from "../../hooks/useAuth";
+import { useCart } from "../../hooks/useCart";
 
-function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+const NavItem = ({ to, icon, label, onClick }) => (
+  <NavLink
+    to={to}
+    onClick={onClick}
+    className={({ isActive }) =>
+      `flex items-center gap-2 px-3 py-2 rounded-xl font-body font-medium text-sm transition-all duration-200 ${
+        isActive
+          ? "bg-primary-500/15 text-primary-400"
+          : "text-gray-400 hover:text-white hover:bg-brand-card"
+      }`
+    }
+  >
+    {icon}
+    {label}
+  </NavLink>
+);
 
-  // Storing links in an array makes it easy to add or remove pages later
-  const navItems = [
-    { name: "Home", path: "/" },
-    { name: "Shops", path: "/shops" },
-    { name: "Cart 🛒", path: "/cart" },
-    { name: "Orders", path: "/orders" },
-    { name: "Profile", path: "/profile" },
-  ];
+const Navbar = () => {
+  const { user, isAuthenticated, logout } = useAuth();
+  const { count } = useCart();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [dropOpen, setDropOpen] = useState(false);
 
-  // Helper function for active link styling
-  const navLinkClass = ({ isActive }) =>
-    `transition duration-200 font-medium ${
-      isActive
-        ? "text-blue-600 border-b-2 border-blue-600 pb-1"
-        : "text-gray-600 hover:text-blue-500"
-    }`;
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+    setMenuOpen(false);
+    setDropOpen(false);
+  };
+const handleShopsClick = async () => {
+  try {
+    const loc = await getUserLocation(); // ✅ your helper
+
+    // ✅ save in localStorage
+    localStorage.setItem("lat", loc.lat);
+    localStorage.setItem("lng", loc.lng);
+
+    // ✅ navigate with params
+    navigate(`/shops`);
+
+  } catch (err) {
+    // ❌ fallback
+    const city = prompt("Enter your city (e.g. Delhi)");
+
+    if (!city) return;
+
+    localStorage.setItem("city", city);
+
+    navigate(`/shops?city=${city}`);
+  }
+};
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-white/70 backdrop-blur-lg border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
-        
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-1">
-          <h1 className="text-2xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-transparent bg-clip-text">
-              Meri Dukaan
+    <header
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+        scrolled
+          ? "bg-brand-bg/95 backdrop-blur-md border-b border-brand-border shadow-card"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="page-container">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center shadow-glow group-hover:shadow-glow-lg transition-all">
+              <span className="text-white font-display font-bold text-sm">
+                AD
+              </span>
+            </div>
+            <span className="font-display font-bold text-lg text-white group-hover:text-gradient transition-all">
+              Aapki Dukaan
             </span>
-            <span className="ml-1">✨</span>
-          </h1>
-        </Link>
-
-        {/* Desktop Nav Links */}
-        <div className="hidden md:flex items-center gap-6">
-          {navItems.map((item) => (
-            <NavLink key={item.name} to={item.path} className={navLinkClass}>
-              {item.name}
-            </NavLink>
-          ))}
-
-          {/* Login Button */}
-          <Link
-            to="/login"
-            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-5 py-2 rounded-full shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-medium"
-          >
-            Login
           </Link>
-        </div>
 
-        {/* Mobile Menu Button */}
-        <div className="md:hidden flex items-center">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-gray-700 hover:text-blue-500 focus:outline-none p-2"
-            aria-label="Toggle menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            <NavItem
+              to="/"
+              icon={<HiHome className="w-4 h-4" />}
+              label="Home"
+            />
+            <NavItem
+              to="#"
+              onClick={(e) => {
+                e.preventDefault(); 
+                handleShopsClick();
+              }}
+              icon={<HiLocationMarker className="w-4 h-4" />}
+              label="Shops"
+            />
+            {isAuthenticated && (
+              <NavItem
+                to="/orders"
+                icon={<HiClipboardList className="w-4 h-4" />}
+                label="Orders"
+              />
+            )}
+          </nav>
+
+          {/* Desktop actions */}
+          <div className="hidden md:flex items-center gap-2">
+            {/* Cart */}
+            <Link
+              to="/cart"
+              className="relative p-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-brand-card transition-all"
+            >
+              <HiShoppingCart className="w-5 h-5" />
+              {count > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-glow">
+                  {count > 9 ? "9+" : count}
+                </span>
               )}
-            </svg>
-          </button>
+            </Link>
+
+            {/* User menu */}
+            {isAuthenticated ? (
+              <div className="relative">
+                <button
+                  onClick={() => setDropOpen((p) => !p)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-brand-card transition-all"
+                >
+                  <div className="w-7 h-7 rounded-full bg-primary-500/20 border border-primary-500/40 flex items-center justify-center">
+                    <span className="text-primary-400 text-xs font-bold">
+                      {user?.name?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-white">
+                    {user?.name?.split(" ")[0]}
+                  </span>
+                </button>
+
+                {dropOpen && (
+                  <div className="absolute right-0 top-12 w-48 bg-brand-surface border border-brand-border rounded-xl shadow-card animate-slide-down overflow-hidden">
+                    <Link
+                      to="/profile"
+                      onClick={() => setDropOpen(false)}
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-gray-300 hover:bg-brand-card hover:text-white transition-colors"
+                    >
+                      <HiUser className="w-4 h-4" /> My Profile
+                    </Link>
+                    <Link
+                      to="/orders"
+                      onClick={() => setDropOpen(false)}
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-gray-300 hover:bg-brand-card hover:text-white transition-colors"
+                    >
+                      <HiClipboardList className="w-4 h-4" /> My Orders
+                    </Link>
+                    <div className="border-t border-brand-border" />
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                    >
+                      <HiLogout className="w-4 h-4" /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold transition-all shadow-glow"
+              >
+                <HiLogin className="w-4 h-4" /> Sign In
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile: cart + hamburger */}
+          <div className="flex md:hidden items-center gap-2">
+            <Link
+              to="/cart"
+              className="relative p-2 rounded-xl text-gray-400 hover:text-white"
+            >
+              <HiShoppingCart className="w-5 h-5" />
+              {count > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {count > 9 ? "9+" : count}
+                </span>
+              )}
+            </Link>
+            <button
+              onClick={() => setMenuOpen((p) => !p)}
+              className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-brand-card transition-all"
+            >
+              {menuOpen ? (
+                <HiX className="w-5 h-5" />
+              ) : (
+                <HiMenuAlt3 className="w-5 h-5" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
-      {isOpen && (
-        <div className="md:hidden bg-white border-b border-gray-200 shadow-lg absolute w-full left-0 top-full">
-          <div className="px-4 pt-2 pb-4 flex flex-col gap-3">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                onClick={() => setIsOpen(false)} // Close menu on click
-                className={({ isActive }) =>
-                  `block px-3 py-2 rounded-md font-medium transition duration-200 ${
-                    isActive ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-50 hover:text-blue-500"
-                  }`
-                }
-              >
-                {item.name}
-              </NavLink>
-            ))}
-            <Link
-              to="/login"
-              onClick={() => setIsOpen(false)}
-              className="mt-2 text-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-full shadow-md font-medium"
-            >
-              Login
-            </Link>
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="md:hidden bg-brand-surface border-t border-brand-border animate-slide-down">
+          <div className="page-container py-4 space-y-1">
+            <NavItem
+              to="/"
+              icon={<HiHome className="w-4 h-4" />}
+              label="Home"
+              onClick={() => setMenuOpen(false)}
+            />
+            <NavItem
+              to="/shops"
+              icon={<HiLocationMarker className="w-4 h-4" />}
+              label="Shops"
+              onClick={() => setMenuOpen(false)}
+            />
+            {isAuthenticated && (
+              <>
+                <NavItem
+                  to="/orders"
+                  icon={<HiClipboardList className="w-4 h-4" />}
+                  label="Orders"
+                  onClick={() => setMenuOpen(false)}
+                />
+                <NavItem
+                  to="/profile"
+                  icon={<HiUser className="w-4 h-4" />}
+                  label="Profile"
+                  onClick={() => setMenuOpen(false)}
+                />
+              </>
+            )}
+            <div className="border-t border-brand-border pt-3 mt-3">
+              {isAuthenticated ? (
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-red-400 hover:bg-red-500/10 text-sm font-medium transition-all"
+                >
+                  <HiLogout className="w-4 h-4" /> Logout
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary-500 text-white text-sm font-semibold w-full justify-center"
+                >
+                  <HiLogin className="w-4 h-4" /> Sign In
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
-}
+};
 
 export default Navbar;

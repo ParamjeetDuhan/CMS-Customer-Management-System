@@ -1,9 +1,28 @@
+/**
+ * routes/authRoutes.js
+ *
+ * Mounted at /api/auth
+ */
 const express = require("express");
-const router = express.Router();
+const router  = express.Router();
+const auth    = require("../middleware/authMiddleware");
+const {
+  signup,
+  login,
+  updateProfile,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+} = require("../controllers/authController");
 
-const {SignUp, Login } = require('../controllers/AuthController');
+/* Public */
+router.post("/signup",         signup);
+router.post("/login",          login);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password",  resetPassword);
 
-router.post("/CustomerSignUp",SignUp );
-router.post("/CustomerLogin",Login);
+/* Protected */
+router.put ("/profile",        auth, updateProfile);
+router.put ("/change-password", auth, changePassword);
 
 module.exports = router;

@@ -19,7 +19,7 @@ import Profile     from '../pages/Profile/Profile';
 import Payment     from '../pages/Payment/Payment';
 import ForgotPassword from '../pages/Auth/Forgotpassword';
 import ResetPassword from '../pages/Auth/Resetpassword';
-import AddressBook from '../pages/Address/AddressBook';
+import AddressBook from '../pages/Address/Addressbook.jsx';
 
 /* ── Protected Route wrapper ── */
 const ProtectedRoute = ({ children }) => {

@@ -1,28 +1,17 @@
 /**
  * services/emailService.js
- * Sends transactional emails via nodemailer (SMTP / Gmail).
+ * Resend Email Service (Production Ready)
  */
-const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  host:   process.env.SMTP_HOST   || "smtp.gmail.com",
-  port:   Number(process.env.SMTP_PORT || 587),
-  secure: process.env.SMTP_SECURE === "true",  // true = 465, false = 587 STARTTLS
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const { Resend } = require('resend');
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
- * Sends a password-reset email with a tokenised link.
- * @param {string} toEmail   - recipient email
- * @param {string} toName    - recipient display name
- * @param {string} resetUrl  - full URL including ?token=...
+ * Send Password Reset Email
  */
 const sendPasswordResetEmail = async (toEmail, toName, resetUrl) => {
-  const fromName  = process.env.EMAIL_FROM_NAME  || "ShopNear";
-  const fromEmail = process.env.SMTP_USER;
+  try {
 
   const html = `
 <!DOCTYPE html>
@@ -115,13 +104,20 @@ const sendPasswordResetEmail = async (toEmail, toName, resetUrl) => {
 </body>
 </html>`;
 
-  await transporter.sendMail({
-    from:    `"${fromName}" <${fromEmail}>`,
-    to:      toEmail,
-    subject: "Reset your ShopNear password",
-    html,
-    text: `Hi ${toName || "there"},\n\nReset your Aapki Dukan password here:\n${resetUrl}\n\nThis link expires in 30 minutes.\n\nIf you didn't request this, ignore this email.`,
-  });
+    const response = await resend.emails.send({
+      from: `Aapki Dukan <${process.env.EMAIL_FROM || "onboarding@resend.dev"}>`,
+      to: toEmail,
+      subject: "Reset your password",
+      html: html,
+    });
+
+    console.log("Email sent:", response);
+    return response;
+
+  } catch (error) {
+    console.error("Resend Email Error:", error);
+    throw error;
+  }
 };
 
 module.exports = { sendPasswordResetEmail };

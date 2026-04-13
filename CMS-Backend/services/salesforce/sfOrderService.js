@@ -3,7 +3,7 @@
  */
 const { sfGet, sfPost, sfPut } = require("./sfClient");
 
-const sfPlaceOrder     = (data)          => sfPost("/Orders", data);
+const sfPlaceOrder     = (data)          => sfPost("/CreateOrder", data);
 const sfGetMyOrders    = (customerId, p) => sfGet("/MyOrders",  { customerId, ...p });
 const sfGetOrderById   = (id, cId)       => sfGet("/OrderDetails", { orderId: id, customerId: cId });
 const sfCancelOrder    = (id, reason, cId) => sfPut("/CancelOrder",  { orderId: id, reason, customerId: cId });

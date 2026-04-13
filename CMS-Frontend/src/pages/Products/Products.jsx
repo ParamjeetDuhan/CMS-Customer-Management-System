@@ -7,11 +7,12 @@ import { EmptyState, ErrorState } from '../../components/common/Badge';
 import { useCart } from '../../hooks/useCart';
 import ProductCard from './ProductCard';
 import { formatCurrency } from '../../utils/helpers';
+import ProductModal from '../Products/ProductModal';
 
 const Products = () => {
   const { id: shopId } = useParams();
   const { count, total } = useCart();
-
+  const [selectedProductId, setSelectedProductId] = useState(null);
   const [shop,       setShop]       = useState(null);
   const [products,   setProducts]   = useState([]);
   const [categories, setCategories] = useState([]);
@@ -108,7 +109,7 @@ const Products = () => {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filtered.map((p) => (
-              <ProductCard key={p.id} product={p} shop={shop} />
+             <ProductCard key={p.id} product={p} shop={shop} onClick={(id) => setSelectedProductId(id)}/>
             ))}
           </div>
         )}
@@ -130,6 +131,10 @@ const Products = () => {
           </Link>
         </div>
       )}
+      <ProductModal
+  productId={selectedProductId}
+  onClose={() => setSelectedProductId(null)}
+/>
     </div>
   );
 };

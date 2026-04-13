@@ -54,7 +54,7 @@ const Navbar = () => {
   };
 const handleShopsClick = async () => {
   try {
-    const loc = await getUserLocation(); // ✅ your helper
+    const loc = await getUserLocation(); 
 
     // ✅ save in localStorage
     localStorage.setItem("lat", loc.lat);
@@ -168,6 +168,13 @@ const handleShopsClick = async () => {
                       className="flex items-center gap-2 px-4 py-3 text-sm text-gray-300 hover:bg-brand-card hover:text-white transition-colors"
                     >
                       <HiClipboardList className="w-4 h-4" /> My Orders
+                    </Link>
+                        <Link
+                      to="/addresses"
+                      onClick={() => setDropOpen(false)}
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-gray-300 hover:bg-brand-card hover:text-white transition-colors"
+                    >
+                      <HiClipboardList className="w-4 h-4" /> Saved Address
                     </Link>
                     <div className="border-t border-brand-border" />
                     <button

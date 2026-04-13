@@ -6,7 +6,7 @@ import { formatCurrency } from '../../utils/helpers';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-const ProductCard = ({ product,shop }) => {
+const ProductCard = ({ product,shop, onClick  }) => {
   const { addItem, removeItem, updateQuantity, isInCart, getItemQty } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -17,19 +17,23 @@ const ProductCard = ({ product,shop }) => {
 
   const handleAdd = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!isAuthenticated) { toast.error('Sign in to add items'); navigate('/login'); return; }
     addItem(product, shop);
   };
 
-  const handleInc = (e) => { e.preventDefault(); updateQuantity(product.id, qty + 1); };
+  const handleInc = (e) => { e.stopPropagation(); e.preventDefault(); updateQuantity(product.id, qty + 1); };
   const handleDec = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (qty <= 1) removeItem(product.id);
     else          updateQuantity(product.id, qty - 1);
   };
 
   return (
-    <div className="card overflow-hidden group flex flex-col hover:-translate-y-1 transition-all duration-300">
+    <div 
+    onClick={() => onClick && onClick(product.id)}
+    className="card overflow-hidden group flex flex-col hover:-translate-y-1 transition-all duration-300">
       {/* Image */}
       <div className="relative h-40 bg-brand-surface overflow-hidden">
         {!imgErr ? (

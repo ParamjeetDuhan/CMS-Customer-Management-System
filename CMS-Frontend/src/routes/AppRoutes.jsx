@@ -19,6 +19,7 @@ import Profile     from '../pages/Profile/Profile';
 import Payment     from '../pages/Payment/Payment';
 import ForgotPassword from '../pages/Auth/Forgotpassword';
 import ResetPassword from '../pages/Auth/Resetpassword';
+import AddressBook from '../pages/Address/AddressBook';
 
 /* ── Protected Route wrapper ── */
 const ProtectedRoute = ({ children }) => {
@@ -72,6 +73,7 @@ const AppRoutes = () => (
     <Route path="/orders"   element={<ProtectedRoute><Layout><Orders /></Layout></ProtectedRoute>} />
     <Route path="/orders/:id" element={<ProtectedRoute><Layout><OrderDetail /></Layout></ProtectedRoute>} />
     <Route path="/profile"  element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>} />
+    <Route path="/addresses" element={<ProtectedRoute><Layout><AddressBook /></Layout></ProtectedRoute>} />
 
     {/* Fallback */}
     <Route path="*" element={<Navigate to="/" replace />} />

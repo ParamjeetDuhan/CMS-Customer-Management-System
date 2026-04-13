@@ -6,7 +6,7 @@ import { PageLoader } from '../../components/common/Loader';
 import { StarRating, EmptyState, ErrorState } from '../../components/common/Badge';
 import { formatDateTime, truncate } from '../../utils/helpers';
 import ProductCard from '../Products/ProductCard';
-import toast from 'react-hot-toast';
+import ProductModal from '../Products/ProductModal';
 
 const ShopDetails = () => {
   const { id } = useParams();
@@ -16,6 +16,7 @@ const ShopDetails = () => {
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState(null);
   const [tab,      setTab]      = useState('products');
+  const [selectedProductId, setSelectedProductId] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -144,7 +145,7 @@ const ShopDetails = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.slice(0, 8).map((p) => (
-                <ProductCard key={p.id} product={p} shop={shop} />
+               <ProductCard key={p.id} product={p} shop={shop} onClick={(id) => setSelectedProductId(id)}/>
               ))}
             </div>
           )
@@ -162,6 +163,7 @@ const ShopDetails = () => {
                     <div>
                       <p className="font-semibold text-white font-body text-sm">{r.customerName || 'Customer'}</p>
                       <StarRating rating={r.rating} size="sm" />
+                      <p className="font-semibold text-white font-body text-sm">{r.reviews || 'Reviews'}</p>
                     </div>
                     <span className="text-xs text-brand-muted font-mono">{formatDateTime(r.createdAt)}</span>
                   </div>
@@ -172,6 +174,10 @@ const ShopDetails = () => {
           )
         )}
       </div>
+            <ProductModal
+  productId={selectedProductId}
+  onClose={() => setSelectedProductId(null)}
+/>
     </div>
   );
 };

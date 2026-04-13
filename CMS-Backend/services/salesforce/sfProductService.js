@@ -31,19 +31,8 @@ const sfGetProductById = (productId) =>
     sfGet("/ProductDetails", { productId })
   );
 
-/** Product categories for a shop */
-const sfGetProductCategories = (shopId) =>
-  withCache(`categories:${shopId}`, () =>
-    sfGet("/ProductCategories", { shopId })
-  );
-
-/** Search products in a shop */
-const sfSearchProducts = (shopId, q) =>
-  sfGet("/SearchProducts", { shopId, q });
 
 module.exports = {
   sfGetShopProducts,
   sfGetProductById,
-  sfGetProductCategories,
-  sfSearchProducts,
 };

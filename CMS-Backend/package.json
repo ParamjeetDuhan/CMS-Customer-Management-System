@@ -14,8 +14,10 @@
     "dotenv": "^16.6.1",
     "express": "^4.22.1",
     "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.4.1",
     "nodemailer": "^6.10.1",
-    "redis": "^4.7.1"
+    "redis": "^4.7.1",
+    "resend": "^6.10.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

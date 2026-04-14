@@ -272,6 +272,7 @@ router.post("/payment", syncAuth, async (req, res) => {
 ========================= */
 router.post("/account", syncAuth, async (req, res) => {
   try {
+    console.log(req.body);
     const { records, action } = extractRecords(req.body);
 
     if (!records.length) return res.json({ ok: true });

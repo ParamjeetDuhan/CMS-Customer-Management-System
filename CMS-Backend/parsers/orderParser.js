@@ -11,8 +11,8 @@ const PAYMENT_STATUS_MAP = {
 const parseOrderItem = (sf = {}, orderId = null) => ({
   id:        sf.Id || sf.id || null,
 
-  orderId:   sf.Order__c || orderId || null, // 🔥 IMPORTANT
-  productId: sf.Product__c || sf.productId || null,
+  orderId:   sf.Order__c || orderId || sf.Custom_order__c ||null, // 🔥 IMPORTANT
+  productId: sf.Product__c || sf.productId || sf.Product_Master__c || null,
 
   name:      sf.Product_Name__c || sf.Name || "",
   price:     parseFloat(sf.Unit_Price__c || sf.Price__c || 0),
@@ -50,13 +50,13 @@ const parseOrder = (sf = {}) => {
 
     customerId:    sf.Account__c || sf.Customer__c || sf.customerId || null,
     shopId:        sf.Shop__c || sf.shopId || null,
-    shopName:      sf.Shop_Name__c || "",
+    shopName:      sf.ShopName__c || "",
 
     status:        STATUS_MAP[sf.Status__c] || sf.Status__c || "Pending",
     paymentStatus: PAYMENT_STATUS_MAP[sf.Payment_Status__c] || "Pending",
     paymentMethod: sf.Payment_Method__c || "cod",
 
-    items, // ✅ still stored inside order
+    items, 
 
     subtotal:      parseFloat(sf.Subtotal__c || 0),
     deliveryFee:   parseFloat(sf.Delivery_Fee__c || 0),
@@ -65,11 +65,9 @@ const parseOrder = (sf = {}) => {
     total:         parseFloat(sf.Total_Amount__c || sf.TotalAmount || 0),
     totalAmount:   parseFloat(sf.Total_Amount__c || sf.TotalAmount || 0),
 
-    address:       sf.Delivery_Address__c || sf.address || "",
-    notes:         sf.Notes__c || "",
+    address:       sf.Customer_Address__c || sf.address || "",
 
-    trackingInfo:  sf.Tracking_Info__c || null,
-    estimatedDelivery: sf.Estimated_Delivery__c || null,
+    estimatedDelivery: sf.Estimated_Delivery_Time__c || null,
 
     deliveredAt:   sf.Delivered_At__c || null,
     cancelReason:  sf.Cancel_Reason__c || null,

@@ -1,11 +1,11 @@
 const parseInvoice = (sf = {}) => ({
   id:            sf.Id || sf.invoiceId || null,
 
-  orderId:       sf.Order__c || sf.orderId || null,
+  orderId:       sf.Order__c || sf.orderId || sf.Custom_orde__c|| null,
   shopId:        sf.Shop__c || sf.shopId || null,
   customerId:    sf.Customer__c || sf.customerId || null,
 
-  invoiceNumber: sf.Invoice_Number__c || sf.invoiceNumber || "",
+  invoiceNumber: sf.Invoice_Number__c || sf.invoiceNumber ||sf.Name || "",
   
   totalAmount:   parseFloat(sf.Total_Amount__c || sf.totalAmount || 0),
   taxAmount:     parseFloat(sf.Tax_Amount__c || sf.taxAmount || 0),

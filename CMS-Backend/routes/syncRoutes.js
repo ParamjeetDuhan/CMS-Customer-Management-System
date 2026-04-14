@@ -272,23 +272,38 @@ router.post("/payment", syncAuth, async (req, res) => {
 ========================= */
 router.post("/account", syncAuth, async (req, res) => {
   try {
-    console.log(req.body);
+    console.log("🔥 SYNC ACCOUNT HIT:", JSON.stringify(req.body));
+
     const { records, action } = extractRecords(req.body);
 
-    if (!records.length) return res.json({ ok: true });
+    if (!records.length) {
+      return res.json({ ok: true, message: "No records" });
+    }
 
     if (action === "delete") {
-      records.forEach((r) => deleteCustomer(r.Id));
+      for (const r of records) {
+        if (r?.Id) {
+          await deleteCustomer(r.Id);
+        }
+      }
       return res.json({ ok: true, action });
     }
 
-    records.forEach((r) => syncCustomer(r));
+    // ✅ FIXED LOOP (NO CRASH)
+    for (const r of records) {
+      try {
+        if (!r?.Id) continue;
+        await syncCustomer(r);
+      } catch (err) {
+        console.error("❌ syncCustomer error:", err.message);
+      }
+    }
 
     return res.json({ ok: true, action });
 
   } catch (err) {
     console.error("[Sync/account]", err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 

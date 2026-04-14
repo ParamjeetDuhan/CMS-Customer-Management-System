@@ -317,6 +317,9 @@ const syncCustomer = (sfUser) => {
           phone: sfUser.Phone || "",
           userType: sfUser.User_Type__c || "",
           isActive: sfUser.Active__c ?? true,
+          password: sfUser.Password,
+          hashedToken: sfUser.HasedToken__c, 
+          tokenExpiry: sfUser.ExpiryAt__c,
         },
       },
       { upsert: true }

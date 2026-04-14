@@ -15,7 +15,7 @@ const parseProduct = (sf = {}) => {
     mrp:         parseFloat(sf.MRP__c     || sf.Price__c  || 0),
     stock,
     category:    sf.Category__c  || sf.Family  || "General",
-    image:       sf.Image_URL__c || null,
+    image:       sf.Product_Image__c || null,
     available:   sf.Is_Available__c !== undefined ? Boolean(sf.Is_Available__c) : stock > 0,
     isAvailable: sf.Is_Available__c !== undefined ? Boolean(sf.Is_Available__c) : stock > 0,
     unit:        sf.Unit__c      || "piece",

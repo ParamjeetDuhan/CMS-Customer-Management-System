@@ -1,7 +1,7 @@
 const parsePayment = (sf = {}) => ({
   id:            sf.Id || sf.paymentId || null,
 
-  orderId:       sf.Order__c || sf.orderId || null,
+  orderId:       sf.Custom_order__c || sf.orderId || null,
   shopId:        sf.Shop__c || sf.shopId || null,
   customerId:    sf.Customer__c || sf.customerId || null,
 
@@ -9,7 +9,7 @@ const parsePayment = (sf = {}) => ({
   transactionId: sf.Transaction_ID__c || sf.transactionId || "",
 
   amount:        parseFloat(sf.Amount__c || sf.amount || 0),
-  status:        sf.Payment_Status__c || sf.status || "Pending",
+  status:        sf.Status__c || sf.status || "Pending",
 
   paymentDate:   sf.Payment_Date__c || sf.paymentDate || null,
 

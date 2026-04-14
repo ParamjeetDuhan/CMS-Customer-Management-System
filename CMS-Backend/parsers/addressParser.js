@@ -5,7 +5,7 @@
 const parseAddress = (sf = {}) => ({
   id:         sf.Id             || sf.id         || null,
   label:      sf.Label__c       || sf.label      || "Home",
-  name:       sf.Name__c        || sf.Contact_Name__c || sf.name || "",
+  name:       sf.Name__c        || sf.Contact_Name__c || sf.name || "" ||sf.Customer_Name__c,
   phone:      sf.Phone__c       || sf.phone      || "",
   line1:      sf.Line1__c       || sf.Street__c  || sf.line1   || "",
   city:       sf.City__c        || sf.city       || "",

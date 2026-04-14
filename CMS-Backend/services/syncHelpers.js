@@ -302,29 +302,38 @@ const deleteInvoice = (id) => {
 /* =========================
    CUSTOMER
 ========================= */
-const syncCustomer = (sfUser) => {
-  const id = sfUser?.Account_ID || sfUser?.Id || sfUser?.id;
-  if (!id) return;
+const syncCustomer = async (sfUser) => {
+  try {
+    const id = sfUser?.Account_ID || sfUser?.Id || sfUser?.id;
+    if (!id) return;
 
-  safe("syncCustomer", () =>
-    Customer.updateOne(
+    console.log("🔥 Syncing customer:", id);
+
+    const update = {
+      salesforceId: id,
+      name: sfUser.Name || "",
+      email: sfUser.Email || "",
+      phone: sfUser.Phone || "",
+      userType: sfUser.User_Type__c || "",
+      isActive:
+        sfUser.Active__c === true ||
+        sfUser.Active__c === "Yes",
+      password: sfUser.Password || "",
+      hashedToken: sfUser.HasedToken__c || "",
+      tokenExpiry: sfUser.ExpiryAt__c || null,
+    };
+
+    const result = await Customer.updateOne(
       { salesforceId: id },
-      {
-        $set: {
-          salesforceId: id,
-          name: sfUser.Name || "",
-          email: sfUser.Email || "",
-          phone: sfUser.Phone || "",
-          userType: sfUser.User_Type__c || "",
-          isActive: sfUser.Active__c ?? true,
-          password: sfUser.Password,
-          hashedToken: sfUser.HasedToken__c, 
-          tokenExpiry: sfUser.ExpiryAt__c,
-        },
-      },
+      { $set: update },
       { upsert: true }
-    )
-  );
+    );
+
+    console.log("✅ Mongo result:", result);
+
+  } catch (err) {
+    console.error("❌ syncCustomer ERROR:", err);
+  }
 };
 
 const deleteCustomer = (id) => {

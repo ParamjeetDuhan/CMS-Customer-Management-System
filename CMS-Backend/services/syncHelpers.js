@@ -8,20 +8,10 @@ const Payment   = require("../models/payment");
 const Customer  = require("../models/customer");
 const Invoice   = require("../models/invoice");
 
-/* 🔥 Safe async wrapper */
-const safe = (label, fn) =>
-  setImmediate(async () => {
-    try {
-      await fn();
-    } catch (e) {
-      console.error(`[syncHelpers/${label}]`, e.message);
-    }
-  });
-
 /* =========================
    SHOP
 ========================= */
-const syncShop = (shop) => {
+const syncShop = async (shop) => {
   if (!shop?.id) return;
 
   const doc = {
@@ -48,255 +38,216 @@ const syncShop = (shop) => {
     };
   }
 
-  safe("syncShop", () =>
-    Shop.updateOne({ salesforceId: shop.id }, { $set: doc }, { upsert: true })
+  await Shop.updateOne(
+    { salesforceId: shop.id },
+    { $set: doc },
+    { upsert: true }
   );
 };
 
-const deleteShop = (id) => {
+const deleteShop = async (id) => {
   if (!id) return;
-  safe("deleteShop", () => Shop.deleteOne({ salesforceId: id }));
+  await Shop.deleteOne({ salesforceId: id });
 };
 
 /* =========================
    PRODUCT
 ========================= */
-const syncProduct = (p, shopId) => {
+const syncProduct = async (p) => {
   if (!p?.id) return;
 
-  safe("syncProduct", () =>
-    Product.updateOne(
-      { salesforceId: p.id },
-      {
-        $set: {
-          salesforceId: p.id,
-          name: p.name,
-          category: p.category,
-          price: p.price,
-          stock: p.stock,
-          isAvailable: p.isAvailable,
-          shopId: p.shopId || shopId,
-        },
+  await Product.updateOne(
+    { salesforceId: p.id },
+    {
+      $set: {
+        salesforceId: p.id,
+        name: p.name,
+        category: p.category,
+        price: p.price,
+        stock: p.stock,
+        isAvailable: p.isAvailable,
+        shopId: p.shopId,
       },
-      { upsert: true }
-    )
+    },
+    { upsert: true }
   );
 };
 
-const deleteProduct = (id) => {
+const deleteProduct = async (id) => {
   if (!id) return;
-  safe("deleteProduct", () =>
-    Product.deleteOne({ salesforceId: id })
-  );
+  await Product.deleteOne({ salesforceId: id });
 };
 
 /* =========================
    ORDER + ORDER ITEMS
 ========================= */
-const syncOrder = (order, customerId) => {
+const syncOrder = async (order, customerId) => {
   if (!order?.id) return;
 
-  safe("syncOrder", () =>
-    Order.updateOne(
-      { salesforceId: order.id },
-      {
-        $set: {
-          salesforceId: order.id,
-          customerId: order.customerId || customerId,
-          shopId: order.shopId,
-          status: order.status,
-          paymentStatus: order.paymentStatus,
-          totalAmount: order.totalAmount || order.total,
+  await Order.updateOne(
+    { salesforceId: order.id },
+    {
+      $set: {
+        salesforceId: order.id,
+        customerId: order.customerId || customerId,
+        shopId: order.shopId,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        totalAmount: order.totalAmount || order.total,
+        customerAddress: order.address || "",
+      },
+    },
+    { upsert: true }
+  );
+};
 
-          customerName: order.customerName || "",
-          customerEmail: order.customerEmail || "",
-          customerPhone: order.customerPhone || "",
-          customerAddress: order.customerAddress || order.address || "",
+const syncOrderItems = async (order) => {
+  if (!order?.items || !order?.id) return;
 
-          items: (order.items || []).map((i) => ({
+  const valid = order.items.filter((i) => i?.id);
+
+  if (!valid.length) return;
+
+  await OrderItem.bulkWrite(
+    valid.map((i) => ({
+      updateOne: {
+        filter: { salesforceId: i.id },
+        update: {
+          $set: {
+            salesforceId: i.id,
+            orderId: order.id,
             productId: i.productId,
             name: i.name,
             quantity: i.quantity,
             price: i.price,
-            total: i.subtotal || i.price * i.quantity,
-          })),
-        },
-      },
-      { upsert: true }
-    )
-  );
-};
-
-const syncOrderItems = (order) => {
-  if (!order?.items || !order?.id) return;
-
-  const valid = order.items.filter((i) => i?.id);
-  if (!valid.length) return;
-
-  safe("syncOrderItems", () =>
-    OrderItem.bulkWrite(
-      valid.map((i) => ({
-        updateOne: {
-          filter: { salesforceId: i.id },
-          update: {
-            $set: {
-              salesforceId: i.id,
-              orderId: order.id,
-              productId: i.productId,
-              name: i.name,
-              quantity: i.quantity,
-              price: i.price,
-              subtotal: i.subtotal,
-              image: i.image,
-            },
+            subtotal: i.subtotal,
+            image: i.image,
           },
-          upsert: true,
         },
-      }))
-    )
+        upsert: true,
+      },
+    }))
   );
 };
 
-const deleteOrder = (id) => {
+const deleteOrder = async (id) => {
   if (!id) return;
-  safe("deleteOrder", () => {
-    Order.deleteOne({ salesforceId: id });
-    OrderItem.deleteMany({ orderId: id }); 
-  });
+
+  await Order.deleteOne({ salesforceId: id });
+  await OrderItem.deleteMany({ orderId: id });
 };
 
 /* =========================
    REVIEW
 ========================= */
-const syncReview = (r, shopId) => {
+const syncReview = async (r) => {
   if (!r?.id) return;
 
-  safe("syncReview", () =>
-    Review.updateOne(
-      { salesforceId: r.id },
-      {
-        $set: {
-          salesforceId: r.id,
-          shopId: r.shopId || shopId,
-          review: r.comment || r.review,
-          rating: r.rating,
-        },
+  await Review.updateOne(
+    { salesforceId: r.id },
+    {
+      $set: {
+        salesforceId: r.id,
+        shopId: r.shopId,
+        review: r.comment,
+        rating: r.rating,
       },
-      { upsert: true }
-    )
+    },
+    { upsert: true }
   );
 };
 
-const deleteReview = (id) => {
+const deleteReview = async (id) => {
   if (!id) return;
-  safe("deleteReview", () =>
-    Review.deleteOne({ salesforceId: id })
-  );
+  await Review.deleteOne({ salesforceId: id });
 };
 
 /* =========================
    ADDRESS
 ========================= */
-const syncAddress = (a, customerId) => {
+const syncAddress = async (a, customerId) => {
   if (!a?.id) return;
 
-  safe("syncAddress", () =>
-    Address.updateOne(
-      { salesforceId: a.id },
-      {
-        $set: {
-          salesforceId: a.id,
-          customerId: a.customerId || customerId,
-          label: a.label,
-          name: a.name,
-          phone: a.phone,
-          line1: a.line1,
-          city: a.city,
-          state: a.state,
-          pincode: a.pincode,
-          isDefault: a.isDefault,
-        },
+  await Address.updateOne(
+    { salesforceId: a.id },
+    {
+      $set: {
+        salesforceId: a.id,
+        customerId: a.customerId || customerId,
+        label: a.label,
+        name: a.name,
+        phone: a.phone,
+        line1: a.line1,
+        city: a.city,
+        state: a.state,
+        pincode: a.pincode,
+        isDefault: a.isDefault,
       },
-      { upsert: true }
-    )
+    },
+    { upsert: true }
   );
 };
 
-const deleteAddress = (id) => {
+const deleteAddress = async (id) => {
   if (!id) return;
-  safe("deleteAddress", () =>
-    Address.deleteOne({ salesforceId: id })
-  );
+  await Address.deleteOne({ salesforceId: id });
 };
 
 /* =========================
    PAYMENT
 ========================= */
-const syncPayment = (p, customerId) => {
+const syncPayment = async (p, customerId) => {
   if (!p?.paymentId) return;
 
-  safe("syncPayment", () =>
-    Payment.updateOne(
-      { salesforceId: p.paymentId },
-      {
-        $set: {
-          salesforceId: p.paymentId,
-          orderId: p.orderId,
-          customerId,
-          paymentMethod: p.paymentMethod,
-          transactionId: p.transactionId,
-          amount: p.amount,
-          status: p.status,
-          paymentDate: p.paymentDate || p.createdAt,
-        },
+  await Payment.updateOne(
+    { salesforceId: p.paymentId },
+    {
+      $set: {
+        salesforceId: p.paymentId,
+        orderId: p.orderId,
+        customerId,
+        paymentMethod: p.paymentMethod,
+        transactionId: p.transactionId,
+        amount: p.amount,
+        status: p.status,
+        paymentDate: p.createdAt,
       },
-      { upsert: true }
-    )
+    },
+    { upsert: true }
   );
 };
 
-const deletePayment = (id) => {
+const deletePayment = async (id) => {
   if (!id) return;
-  safe("deletePayment", () =>
-    Payment.deleteOne({ salesforceId: id })
-  );
+  await Payment.deleteOne({ salesforceId: id });
 };
 
 /* =========================
    INVOICE
 ========================= */
-const syncInvoice = (i, customerId) => {
+const syncInvoice = async (i, customerId) => {
   if (!i?.id) return;
 
-  safe("syncInvoice", () =>
-    Invoice.updateOne(
-      { salesforceId: i.id },
-      {
-        $set: {
-          salesforceId: i.id,
-          orderId: i.orderId,
-          shopId: i.shopId,
-          customerId: i.customerId || customerId,
-          invoiceNumber: i.invoiceNumber,
-          totalAmount: i.totalAmount,
-          taxAmount: i.taxAmount,
-          discount: i.discount,
-          status: i.status,
-          issueDate: i.issueDate,
-          dueDate: i.dueDate,
-          pdfUrl: i.pdfUrl,
-        },
+  await Invoice.updateOne(
+    { salesforceId: i.id },
+    {
+      $set: {
+        salesforceId: i.id,
+        orderId: i.orderId,
+        shopId: i.shopId,
+        customerId: i.customerId || customerId,
+        invoiceNumber: i.invoiceNumber,
+        totalAmount: i.totalAmount,
+        status: i.status,
       },
-      { upsert: true }
-    )
+    },
+    { upsert: true }
   );
 };
 
-const deleteInvoice = (id) => {
+const deleteInvoice = async (id) => {
   if (!id) return;
-  safe("deleteInvoice", () =>
-    Invoice.deleteOne({ salesforceId: id })
-  );
+  await Invoice.deleteOne({ salesforceId: id });
 };
 
 /* =========================
@@ -304,72 +255,37 @@ const deleteInvoice = (id) => {
 ========================= */
 const syncCustomer = async (sfUser) => {
   try {
-    const id = sfUser?.Account_ID || sfUser?.Id || sfUser?.id;
+    const id = sfUser?.Id;
     if (!id) return;
 
-    console.log("🔥 Syncing customer:", id);
-
-    const update = {
-      salesforceId: id,
-      name: sfUser.Name || "",
-      email: sfUser.Email || "",
-      phone: sfUser.Phone || "",
-      userType: sfUser.User_Type__c || "",
-      isActive:
-        sfUser.Active__c === true ||
-        sfUser.Active__c === "Yes",
-      password: sfUser.Password || "",
-      hashedToken: sfUser.HasedToken__c || "",
-      tokenExpiry: sfUser.ExpiryAt__c || null,
-    };
-
-    const result = await Customer.updateOne(
+    await Customer.updateOne(
       { salesforceId: id },
-      { $set: update },
+      {
+        $set: {
+          salesforceId: id,
+          name: sfUser.Name,
+          email: sfUser.Email,
+          phone: sfUser.Phone,
+          userType: sfUser.User_Type__c,
+          isActive: sfUser.Active__c === "Yes",
+          password: sfUser.Password,
+          hashedToken: sfUser.HasedToken__c,
+          tokenExpiry: sfUser.ExpiryAt__c,
+        },
+      },
       { upsert: true }
     );
 
-    console.log("✅ Mongo result:", result);
-
   } catch (err) {
-    console.error("❌ syncCustomer ERROR:", err);
+    console.error("syncCustomer error:", err);
   }
 };
 
-const deleteCustomer = (id) => {
+const deleteCustomer = async (id) => {
   if (!id) return;
-  safe("deleteCustomer", () =>
-    Customer.deleteOne({ salesforceId: id })
-  );
+  await Customer.deleteOne({ salesforceId: id });
 };
 
-/* =========================
-   LIST HELPERS (WRAPPERS)
-========================= */
-
-const syncShopList = (shops = []) => {
-  shops.forEach(syncShop);
-};
-
-const syncProductList = (products = [], shopId) => {
-  products.forEach((p) => syncProduct(p, shopId));
-};
-
-const syncReviewList = (reviews = [], shopId) => {
-  reviews.forEach((r) => syncReview(r, shopId));
-};
-
-const syncAddressList = (addresses = [], customerId) => {
-  addresses.forEach((a) => syncAddress(a, customerId));
-};
-
-const syncInvoiceList = (invoices = [], customerId) => {
-  invoices.forEach((i) => syncInvoice(i, customerId));
-};
-
-/* =========================
-   EXPORTS
-========================= */
 module.exports = {
   syncShop, deleteShop,
   syncProduct, deleteProduct,
@@ -379,9 +295,4 @@ module.exports = {
   syncPayment, deletePayment,
   syncInvoice, deleteInvoice,
   syncCustomer, deleteCustomer,
-syncShopList,
-syncProductList,
-syncReviewList,
-syncAddressList,
-syncInvoiceList,
 };

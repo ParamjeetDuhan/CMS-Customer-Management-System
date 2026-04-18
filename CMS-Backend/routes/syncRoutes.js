@@ -26,7 +26,7 @@ const handler = (syncFn, deleteFn) => async (req, res) => {
     if (!records.length) return res.json({ ok: true });
 
     if (action === "delete") {
-      for (const r of records) await deleteFn(r.Id);
+      for (const r of records) await deleteFn(r.id || r.Id);
       return res.json({ ok: true, action });
     }
 
@@ -49,12 +49,12 @@ router.post("/order", async (req, res) => {
     const { records, action } = extractRecords(req.body);
 
     if (action === "delete") {
-      for (const r of records) await deleteOrder(r.Id);
+      for (const r of records) await deleteOrder(r.Id || r.id);
       return res.json({ ok: true });
     }
 
     for (const r of records) {
-      await syncOrder(r, r.customerId);
+      await syncOrder(r, r.customerId || r.customerid);
       await syncOrderItems(r);
     }
 

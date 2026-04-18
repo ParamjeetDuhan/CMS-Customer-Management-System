@@ -48,6 +48,7 @@ const syncShop = async (shop) => {
 const deleteShop = async (id) => {
   if (!id) return;
   await Shop.deleteOne({ salesforceId: id });
+  await Product.deleteMany({ shopId: id });
 };
 
 /* =========================
@@ -286,6 +287,59 @@ const deleteCustomer = async (id) => {
   await Customer.deleteOne({ salesforceId: id });
 };
 
+
+/* for list data */
+
+const syncShopList = async (shops = []) => {
+  for (const shop of shops) {
+    try {
+      await syncShop(shop);
+    } catch (err) {
+      console.error("syncShopList error:", err);
+    }
+  }
+};
+
+const syncProductList = async (products = []) => {
+  for (const p of products) {
+    try {
+      await syncProduct(p);
+    } catch (err) {
+      console.error("syncProductList error:", err);
+    }
+  }
+};
+
+const syncReviewList = async (reviews = []) => {
+  for (const r of reviews) {
+    try {
+      await syncReview(r);
+    } catch (err) {
+      console.error("syncReviewList error:", err);
+    }
+  }
+};
+
+const syncAddressList = async (addresses = [], customerId) => {
+  for (const a of addresses) {
+    try {
+      await syncAddress(a, customerId);
+    } catch (err) {
+      console.error("syncAddressList error:", err);
+    }
+  }
+};
+
+const syncInvoiceList = async (invoices = [], customerId) => {
+  for (const i of invoices) {
+    try {
+      await syncInvoice(i, customerId);
+    } catch (err) {
+      console.error("syncInvoiceList error:", err);
+    }
+  }
+};
+
 module.exports = {
   syncShop, deleteShop,
   syncProduct, deleteProduct,
@@ -295,4 +349,10 @@ module.exports = {
   syncPayment, deletePayment,
   syncInvoice, deleteInvoice,
   syncCustomer, deleteCustomer,
+
+  syncShopList,
+  syncProductList,
+  syncReviewList,
+  syncAddressList,
+  syncInvoiceList,
 };

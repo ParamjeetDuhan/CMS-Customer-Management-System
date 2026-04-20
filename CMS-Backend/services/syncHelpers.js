@@ -48,7 +48,6 @@ const syncShop = async (shop) => {
 const deleteShop = async (id) => {
   if (!id) return;
   await Shop.deleteOne({ salesforceId: id });
-  await Product.deleteMany({ shopId: id });
 };
 
 /* =========================
@@ -96,6 +95,9 @@ const syncOrder = async (order, customerId) => {
         paymentStatus: order.paymentStatus,
         totalAmount: order.totalAmount || order.total,
         customerAddress: order.address || "",
+        customerName: order.customerName ||"",
+        customerEmail: order.customerEmail || "",
+        customerPhone: order.customerPhone || ""
       },
     },
     { upsert: true }
@@ -120,7 +122,7 @@ const syncOrderItems = async (order) => {
             productId: i.productId,
             name: i.name,
             quantity: i.quantity,
-            price: i.price,
+            unitPrice: i.price,
             subtotal: i.subtotal,
             image: i.image,
           },

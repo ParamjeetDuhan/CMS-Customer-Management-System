@@ -21,9 +21,11 @@ const orderItemSchema = new mongoose.Schema(
     },
 
     // 📦 Item Details
+    name : String,
     quantity: Number,
     unitPrice: Number,
     subtotal: Number,
+    image : String,
 
     // 🕒 Metadata
     createdAtSF: Date,
